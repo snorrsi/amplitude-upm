@@ -1,0 +1,15 @@
+{
+  "name": "com.mussila.amplitude-sdk",
+  "version": "1.6.0",
+  "displayName": "Mussila - Amplitude SDK",
+  "description": "Mussila - Amplitude SDK",
+  "unity": "2019.1",
+  "author": {
+    "name": "Snorri Siemsen",
+    "email": "snorri@mussila.com",
+    "url": "https://github.com/mussila/amplitude-sdk-upm"
+  },
+  "dependencies": {
+    "com.google.external-dependency-manager": "1.2.162"
+  }
+}
