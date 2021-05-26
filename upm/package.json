@@ -1,11 +1,11 @@
 {
   "name": "com.mussila.amplitude-sdk",
-  "version": "1.6.0",
+  "version": "2.2.0",
   "displayName": "Mussila - Amplitude SDK",
   "description": "Mussila - Amplitude SDK",
   "unity": "2019.1",
   "author": {
-    "name": "Snorri Siemsen",
+    "name": "Mussila",
     "email": "snorri@mussila.com",
     "url": "https://github.com/mussila/amplitude-sdk-upm"
   },
