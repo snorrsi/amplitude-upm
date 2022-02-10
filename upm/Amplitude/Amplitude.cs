@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 
 public class Amplitude {
 	private static readonly string UnityLibraryName = "amplitude-unity";
-	private static readonly string UnityLibraryVersion = "2.2.0";
+	private static readonly string UnityLibraryVersion = "2.4.0";
 
 	private static Dictionary<string, Amplitude> instances;
 	private static readonly object instanceLock = new object();
@@ -55,6 +55,10 @@ public class Amplitude {
 	private static extern void _Amplitude_disableCoppaControl(string instanceName);
 	[DllImport ("__Internal")]
 	private static extern void _Amplitude_setServerUrl(string instanceName, string serverUrl);
+	[DllImport ("__Internal")]
+	private static extern void _Amplitude_setServerZone(string instanceName, string serverZone, bool updateServerUrl);
+	[DllImport ("__Internal")]
+	private static extern void _Amplitude_setUseDynamicConfig(string instanceName, bool useDynamicConfig);
 	[DllImport ("__Internal")]
 	private static extern void _Amplitude_logRevenueAmount(string instanceName, double amount);
 	[DllImport ("__Internal")]
@@ -703,6 +707,48 @@ public class Amplitude {
 #endif
 	}
 
+	/// <summary>
+	/// Turning dynamic config on will find the best server url automatically based on users' geo location.
+	/// Note:
+	/// 1. If you have your own proxy server and use `setServerUrl` API, please leave this off.
+	/// 2. If you have users in China Mainland, we suggest you turn this on.
+	/// </summary>
+	public void setUseDynamicConfig(bool useDynamicConfig) {
+		Log (string.Format("C# setUseDynamicConfig"));
+#if (UNITY_IPHONE || UNITY_TVOS)
+		if (Application.platform == RuntimePlatform.IPhonePlayer || Application.platform == RuntimePlatform.tvOS) {
+			_Amplitude_setUseDynamicConfig(instanceName, useDynamicConfig);
+		}
+#endif
+
+#if UNITY_ANDROID
+		if (Application.platform == RuntimePlatform.Android) {
+			pluginClass.CallStatic("setUseDynamicConfig", instanceName, useDynamicConfig);
+		}
+#endif
+	}
+
+	/// <summary>
+	/// Set Amplitude Server Zone, switch to zone related configuration, including dynamic configuration and server url.
+    /// To send data to Amplitude's EU servers, you need to configure the serverZone to EU like client.setServerZone("EU");
+    /// serverZone could be EU or US. Recommend to keep updateServerUrl to be true for alignment unless use own proxy server.
+	/// </summary>
+	public void setServerZone(AmplitudeServerZone serverZone, bool updateServerUrl = true) {
+		Log (string.Format("C# setServerZone"));
+		string serverZoneStr = serverZone.ToString();
+#if (UNITY_IPHONE || UNITY_TVOS)
+		if (Application.platform == RuntimePlatform.IPhonePlayer || Application.platform == RuntimePlatform.tvOS) {
+			_Amplitude_setServerZone(instanceName, serverZoneStr, updateServerUrl);
+		}
+#endif
+
+#if UNITY_ANDROID
+		if (Application.platform == RuntimePlatform.Android) {
+			pluginClass.CallStatic("setServerZone", instanceName, serverZoneStr, updateServerUrl);
+		}
+#endif
+	}
+
 	[System.Obsolete("Please call setUserProperties instead", false)]
 	public void setGlobalUserProperties(IDictionary<string, object> properties) {
 		setUserProperties(properties);
@@ -834,6 +880,23 @@ public class Amplitude {
 #if UNITY_ANDROID
 		if (Application.platform == RuntimePlatform.Android) {
 			pluginClass.CallStatic("useAdvertisingIdForDeviceId", instanceName);
+		}
+#endif
+	}
+
+	/// <summary>
+	/// iOS: 
+	/// This method has no equivalent in iOS. See comments in `useAdvertisingIdForDeviceId()`.
+	/// 
+	/// Android: If this method is called, the setting for Advertising ID will be used first for the user's device ID,
+	/// and then if unsuccessful, fall back to Android App Set ID: a user-resetable, per device/per install ID provided by Google.
+	/// 
+	/// **NOTE:** Must be called before `initializeApiKey`.
+	/// </summary>
+	public void useAppSetIdForDeviceId() {
+#if UNITY_ANDROID
+		if (Application.platform == RuntimePlatform.Android) {
+			pluginClass.CallStatic("useAppSetIdForDeviceId", instanceName);
 		}
 #endif
 	}
